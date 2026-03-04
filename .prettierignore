@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+out/
+
+# Artifacts and Cache
+.next/
+.cache/
+coverage/
+
+# Formats Prettier shouldn't touch
+*.md
+*.html
+.gitignore
+
+*.env
+.env.local
+.env.*.local
+.env.*
