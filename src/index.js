@@ -3,7 +3,8 @@ import connectDB from "./db/connect.db.js";
 import { app } from "./app.js";
 
 dotenv.config({
-    path: "./.env"
+    path: "./.env",
+    quiet: true // remove .env logs from console
 });
 
 connectDB()
