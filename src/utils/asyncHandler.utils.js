@@ -9,7 +9,7 @@ const asyncHandler = (requestHandler) => {
     }
 }
 
-export { asyncHandler }
+export default asyncHandler;
 
 // const asyncHandler = (requestHandler) => {
 //     return async (req, res, next) => {
