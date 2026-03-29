@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
-import connectDB from "./db/connect.db.js";
-import { app } from "./app.js";
 
 dotenv.config({
     path: "./.env",
-    quiet: true // remove .env logs from console
+    quiet: true
 });
+
+import connectDB from "./db/connect.db.js";
+import { app } from "./app.js";
 
 connectDB()
     .then(() => {

@@ -47,12 +47,14 @@ const userSchema = new mongoose.Schema({
     ]
 }, { timestamps: true });
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () { // removed next from parameters 
     if (!this.isModified("password")) {
-        return next();
+        // return next(); ❌ Old way — causes "next is not a function" with async in newer Mongoose
+        return;
     }
     this.password = await bcrypt.hash(this.password, 10);
-    next();
+    //next(); ❌ Old way — causes "next is not a function" with async in newer Mongoose
+    return;
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
