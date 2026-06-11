@@ -6,7 +6,7 @@ dotenv.config({
 });
 
 import connectDB from "./db/connect.db.js";
-import { app } from "./app.js";
+import app from "./app.js";
 
 connectDB()
     .then(() => {
