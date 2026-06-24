@@ -103,10 +103,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // Login User Function
 const loginUser = asyncHandler(async (req, res) => {
-    // check the access token, if new user then generate it
-    // if access token is expired then renew it
-    // return successful response
-
     // get user details form frontend username/email, password, access token, refresh token
     const { username, email, password } = req.body;
 
@@ -134,6 +130,7 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Password is incorrect.");
     }
 
+    // check the access token, if new user then generate it
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userExist._id);
 
     // Update the user (Either can update the previously find User or find again the user which will be updated)
@@ -165,7 +162,22 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // Logout User Function
 const logoutUser = asyncHandler(async (req, res) => {
+    const user = await User.findByIdAndUpdate(req.user._id, {
+        $set: {
+            refreshToken: undefined
+        }
+    });
 
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
-export { registerUser, loginUser };
+export { registerUser, loginUser, logoutUser };
