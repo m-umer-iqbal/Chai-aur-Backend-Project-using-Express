@@ -4,10 +4,25 @@ import User from "../models/user.model.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
-const generateAccessAndRefreshTokens = async (userId) => {
-    try {
-        const user = await User.findById(userid);
+// const generateAccessAndRefreshTokens = async (userId) => {
+//     try {
+//         const user = await User.findById(userId);
 
+//         const accessToken = await user.generateAccessToken();
+//         const refreshToken = await user.generateRefreshToken();
+
+//         user.refreshToken = refreshToken;
+
+//         await user.save({ ValiditeBeforeSave: false });
+
+//         return { accessToken, refreshToken };
+//     } catch (error) {
+//         throw new ApiError(500, `Error in generating Access Token and Refresh Token: ${error.message}`);
+//     }
+// }
+
+const generateAccessAndRefreshTokens = async (user) => {
+    try {
         const accessToken = await user.generateAccessToken();
         const refreshToken = await user.generateRefreshToken();
 
@@ -17,22 +32,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
         return { accessToken, refreshToken };
     } catch (error) {
-        throw new ApiError(500, "Error in generating Access Token and Refresh Token");
-    }
-}
-
-const generateAccessAndRefreshTokens1 = async (user) => {
-    try {
-        const accessToken = await user.generateAccessToken();
-        const refreshToken = await user.generateRefreshToken();
-
-        user.refreshToken = refreshToken;
-
-        await user.save({ ValiditeBeforeSave: false });
-
-        return { accessToken, refreshToken };
-    } catch (error) {
-        throw new ApiError(500, "Error in generating Access Token and Refresh Token");
+        throw new ApiError(500, `Error in generating Access Token and Refresh Token: ${error.message}`);
     }
 }
 
@@ -103,7 +103,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // Login User Function
 const loginUser = asyncHandler(async (req, res) => {
-    // get user details form frontend username/email, password, access token, refresh token
+    // get user details form frontend username/email, password
     const { username, email, password } = req.body;
 
     // validation - not empty
@@ -122,8 +122,6 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "User does not exist.");
     }
 
-    console.log("User Exist:", userExist);
-
     const passwordCheck = await userExist.isPasswordCorrect(password);
 
     if (!passwordCheck) {
@@ -131,17 +129,17 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // check the access token, if new user then generate it
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userExist._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userExist);
 
     // Update the user (Either can update the previously find User or find again the user which will be updated)
 
     // Method 1:
-    // userExist.refreshToken = refreshToken;
-    // userExist.accessToken = accessToken;
-    // userExist.save({ValiditeBeforeSave: false})
+    userExist.refreshToken = refreshToken;
+    userExist.accessToken = accessToken;
+    userExist.save({ ValiditeBeforeSave: false })
 
     // Method 2:
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+    // const loggedInUser = await User.findById(userExist._id).select("-password -refreshToken");
 
     const options = {
         httpOnly: true,
@@ -154,7 +152,7 @@ const loginUser = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
         .json(new ApiResponse(200, "User logged in successfully", {
-            user: loggedInUser,
+            user: userExist,
             accessToken,
             refreshToken
         }));
