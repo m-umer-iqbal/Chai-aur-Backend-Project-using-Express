@@ -213,4 +213,43 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 });
 
+const changeUserPassword = asyncHandler(async (req, res) => {
+    // getting details from frontend
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    // validation - not empty
+    if (!oldPassword || oldPassword === "") {
+        throw new ApiError(400, "Old Password is required.");
+    } else if (!newPassword || newPassword === "") {
+        throw new ApiError(400, "New Password is required.");
+    } else if (!confirmPassword || confirmPassword === "") {
+        throw new ApiError(400, "Confirm Password is required.");
+    } else if (newPassword === confirmPassword) {
+        throw new ApiError(400, "Confirm Password does not match pasword.");
+    }
+
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+        throw new ApiError(400, "User does not exist.");
+    }
+
+    const passwordCheck = await user.isPassswordCorrect(oldPassword);
+
+    if (!passwordCheck) {
+        throw new ApiError(400, "Old Password is incorrect.");
+    }
+
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, {}, "User password changed successfully"));
+
+    //check if the new password is from one of the old passwords
+    //need to change the user model to accept the passwordHistory
+    //then check the new password exist in userhistory or not
+});
+
 export { registerUser, loginUser, logoutUser, refreshAccessToken };
