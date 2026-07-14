@@ -224,7 +224,7 @@ const changeUserPassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, "New Password is required.");
     } else if (!confirmPassword || confirmPassword === "") {
         throw new ApiError(400, "Confirm Password is required.");
-    } else if (newPassword === confirmPassword) {
+    } else if (!(newPassword === confirmPassword)) {
         throw new ApiError(400, "Confirm Password does not match pasword.");
     }
 
