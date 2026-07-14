@@ -252,4 +252,19 @@ const changeUserPassword = asyncHandler(async (req, res) => {
     //then check the new password exist in userhistory or not
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+const getCurrentUser = asyncHandler(async (req, res) => {
+    const user = req.user;
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user, "Current user fetched successfully"));
+});
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changeUserPassword,
+    getCurrentUser
+};
