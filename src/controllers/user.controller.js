@@ -10,6 +10,7 @@ const options = {
     secure: true
 }
 
+//Helper Function v1
 // const generateAccessAndRefreshTokens = async (userId) => {
 //     try {
 //         const user = await User.findById(userId);
@@ -27,6 +28,7 @@ const options = {
 //     }
 // }
 
+//Helper Function v2 - my version
 const generateAccessAndRefreshTokens = async (user) => {
     try {
         const accessToken = await user.generateAccessToken();
@@ -62,7 +64,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const existedUser = await User.findOne({
         $or: [{ email }, { username }] // checks if email or username match with any other email or username
     });
-    console.log("Existed User: ", existedUser);
+
     if (existedUser) {
         throw new ApiError(409, "User already exist.");
     }
@@ -95,7 +97,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // check for user creation
     const createdUser = await User.findById(newUser._id).select(
-        "-password -refeshToken" // remove password and refresh token field from response
+        "-password -refeshToken -passwordHistory" // remove password and refresh token field from response
     );
     if (!createdUser) {
         throw new ApiError(500, "User not created.");
@@ -139,13 +141,13 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // Update the user (Either can update the previously find User or find again the user which will be updated)
 
-    // Method 1:
-    userExist.refreshToken = refreshToken;
-    userExist.accessToken = accessToken;
-    userExist.save({ ValiditeBeforeSave: false });
+    // Method 1: it is good but we are sending passwordHistory and refreshToken to the user
+    // userExist.refreshToken = refreshToken;
+    // userExist.accessToken = accessToken;
+    // userExist.save({ ValiditeBeforeSave: false });
 
     // Method 2:
-    // const loggedInUser = await User.findById(userExist._id).select("-password -refreshToken");
+    const loggedInUser = await User.findById(userExist._id).select("-password -refreshToken -passwordHistory");
 
     // send successful response
     return res
@@ -153,7 +155,7 @@ const loginUser = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
         .json(new ApiResponse(200, "User logged in successfully", {
-            user: userExist,
+            user: loggedInUser,
             accessToken,
             refreshToken
         }));
@@ -216,7 +218,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const changeUserPassword = asyncHandler(async (req, res) => {
     // getting details from frontend
     const { oldPassword, newPassword, confirmPassword } = req.body;
-
+    console.log(`oldPassword: ${oldPassword}`);
     // validation - not empty
     if (!oldPassword || oldPassword === "") {
         throw new ApiError(400, "Old Password is required.");
@@ -234,10 +236,16 @@ const changeUserPassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, "User does not exist.");
     }
 
-    const passwordCheck = await user.isPassswordCorrect(oldPassword);
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
 
-    if (!passwordCheck) {
+    if (!isPasswordCorrect) {
         throw new ApiError(400, "Old Password is incorrect.");
+    }
+
+    const isOldPassword = await user.isOldPassword(newPassword);
+
+    if (isOldPassword) {
+        throw new ApiError(400, "This password is used before try another password.");
     }
 
     user.password = newPassword;
@@ -246,10 +254,6 @@ const changeUserPassword = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(new ApiResponse(200, {}, "User password changed successfully"));
-
-    //check if the new password is from one of the old passwords
-    //need to change the user model to accept the passwordHistory
-    //then check the new password exist in userhistory or not
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
@@ -260,11 +264,37 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Current user fetched successfully"));
 });
 
+const changeUserInfo = asyncHandler(async (req, res) => {
+
+    const { fullname, email } = req.body;
+
+    // validation - not empty
+    if ((!fullname && fullname === "") && (!email || email === "")) {
+        throw new ApiError(400, "Fullname and Email is required.");
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullname,
+                email
+            }
+        },
+        { new: true }
+    ).select("-password -refreshToken -passwordHistory");
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user, "User info updated successfully"));
+});
+
 export {
     registerUser,
     loginUser,
     logoutUser,
     refreshAccessToken,
     changeUserPassword,
-    getCurrentUser
+    getCurrentUser,
+    changeUserInfo
 };

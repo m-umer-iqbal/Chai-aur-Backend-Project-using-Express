@@ -36,9 +36,16 @@ const userSchema = new mongoose.Schema({
         required: [true, "Password is required."],
         minLength: 8
     },
-    refreshToken: {
-        type: String,
-    },
+    passwordHistory: [
+        {
+            type: String
+        }
+    ],
+    refreshToken: [
+        {
+            type: String,
+        }
+    ],
     watchHistory: [ // array of objectId
         {
             type: mongoose.Schema.Types.ObjectId,
@@ -53,6 +60,9 @@ userSchema.pre("save", async function () { // removed next from parameters
         return;
     }
     this.password = await bcrypt.hash(this.password, 10);
+
+    //storing the passwords in the password history so user cannot set the previously used passwords
+    this.passwordHistory.push(this.password);
     //next(); ❌ Old way — causes "next is not a function" with async in newer Mongoose
     return;
 });
@@ -85,6 +95,19 @@ userSchema.methods.generateRefreshToken = function () {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
     );
+}
+
+userSchema.methods.isOldPassword = async function (newPassword) {
+
+    for (const hashedPassword of this.passwordHistory) {
+        const isMatch = await bcrypt.compare(newPassword, hashedPassword);
+
+        if (isMatch) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 const User = mongoose.model("User", userSchema);
