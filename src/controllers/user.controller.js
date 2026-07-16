@@ -40,7 +40,7 @@ const generateAccessAndRefreshTokens = async (user) => {
 
         return { accessToken, refreshToken };
     } catch (error) {
-        throw new ApiError(500, `Error in generating Access Token and Refresh Token: ${error.message}`);
+        throw new ApiError(500, `Error in generating Access Token and Refresh Token: ${error.message}.`);
     }
 }
 
@@ -105,7 +105,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // return res
     return res.status(201).json(
-        new ApiResponse(200, "User registered successfully", createdUser)
+        new ApiResponse(200, "User registered successfully.", createdUser)
     )
 });
 
@@ -154,7 +154,7 @@ const loginUser = asyncHandler(async (req, res) => {
         .status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json(new ApiResponse(200, "User logged in successfully", {
+        .json(new ApiResponse(200, "User logged in successfully.", {
             user: loggedInUser,
             accessToken,
             refreshToken
@@ -173,14 +173,14 @@ const logoutUser = asyncHandler(async (req, res) => {
         .status(200)
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
-        .json(new ApiResponse(200, {}, "User logged out successfully"));
+        .json(new ApiResponse(200, {}, "User logged out successfully."));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
     if (!incomingRefreshToken) {
-        throw new ApiError(401, "Unauthorized request");
+        throw new ApiError(401, "Unauthorized request.");
     }
 
     try {
@@ -189,11 +189,11 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         const foundedUser = await User.findById(decodedToken?._id);
 
         if (!foundedUser) {
-            throw new ApiError(401, "Invalid refresh token");
+            throw new ApiError(401, "Invalid refresh token.");
         }
 
         if (incomingRefreshToken !== foundedUser?.refreshToken) {
-            throw new ApiError(401, "Refresh token is expired or used");
+            throw new ApiError(401, "Refresh token is expired or used.");
         }
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(foundedUser);
@@ -206,12 +206,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             .status(200)
             .cookie("accessToken", accessToken, options)
             .cookie("refreshToken", refreshToken, options)
-            .json(new ApiResponse(200, "Access token refreshed successfully", {
+            .json(new ApiResponse(200, "Access token refreshed successfully.", {
                 accessToken,
                 refreshToken
             }));
     } catch (error) {
-        throw new ApiError(401, error?.message || "Invalid refresh token");
+        throw new ApiError(401, error?.message || "Invalid refresh token.");
     }
 });
 
@@ -253,7 +253,7 @@ const changeUserPassword = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, {}, "User password changed successfully"));
+        .json(new ApiResponse(200, {}, "User password changed successfully."));
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
@@ -261,7 +261,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, user, "Current user fetched successfully"));
+        .json(new ApiResponse(200, user, "Current user fetched successfully."));
 });
 
 const changeUserInfo = asyncHandler(async (req, res) => {
@@ -290,7 +290,7 @@ const changeUserInfo = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, updatedUser, "User info updated successfully"));
+        .json(new ApiResponse(200, updatedUser, "User info updated successfully."));
 });
 
 const changeUserAvatar = asyncHandler(async (req, res) => {
@@ -318,7 +318,7 @@ const changeUserAvatar = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, updatedUser, "User avatar updated successfully"));
+        .json(new ApiResponse(200, updatedUser, "User avatar updated successfully."));
 });
 
 const changeUserCoverImage = asyncHandler(async (req, res) => {
@@ -346,7 +346,7 @@ const changeUserCoverImage = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, updatedUser, "User Cover Image updated successfully"));
+        .json(new ApiResponse(200, updatedUser, "User Cover Image updated successfully."));
 });
 
 export {
