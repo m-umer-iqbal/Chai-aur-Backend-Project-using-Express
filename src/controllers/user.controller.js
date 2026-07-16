@@ -316,6 +316,8 @@ const changeUserAvatar = asyncHandler(async (req, res) => {
         { new: true }
     ).select("-password -refreshToken -passwordHistory");
 
+    // TODO: delete old avatar image on cloudinary
+
     return res
         .status(200)
         .json(new ApiResponse(200, updatedUser, "User avatar updated successfully."));
@@ -344,6 +346,8 @@ const changeUserCoverImage = asyncHandler(async (req, res) => {
         { new: true }
     ).select("-password -refreshToken -passwordHistory");
 
+    // TODO: delete old avatar image on cloudinary
+
     return res
         .status(200)
         .json(new ApiResponse(200, updatedUser, "User Cover Image updated successfully."));
@@ -360,3 +364,5 @@ export {
     changeUserAvatar,
     changeUserCoverImage
 };
+
+// TODO: Write the middleware to handle error type of multer
