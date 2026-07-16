@@ -271,6 +271,10 @@ const changeUserInfo = asyncHandler(async (req, res) => {
     // validation - not empty
     if ((!fullname && fullname === "") && (!email || email === "")) {
         throw new ApiError(400, "Fullname and Email is required.");
+    } else if (fullname === "") {
+        throw new ApiError(400, "Fullname cannot be empty.");
+    } else if (email === "") {
+        throw new ApiError(400, "Email cannot be empty.");
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -286,7 +290,7 @@ const changeUserInfo = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, user, "User info updated successfully"));
+        .json(new ApiResponse(200, updatedUser, "User info updated successfully"));
 });
 
 export {
