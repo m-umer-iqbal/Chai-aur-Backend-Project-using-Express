@@ -4,26 +4,22 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
 const verifyJWT = asyncHandler(async (req, res, next) => {
-    try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
-        if (!token) {
-            throw new ApiError(401, "Unauthorized request");
-        }
-
-        const decodedToken = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-        const foundedUser = await User.findById(decodedToken?._id).select("-password -refreshToken");
-
-        if (!foundedUser) {
-            throw new ApiError(401, "Invalid access token");
-        }
-
-        req.user = foundedUser;
-        next();
-    } catch (error) {
-        throw new ApiError(401, error?.message || "Invalid access token");
+    if (!token) {
+        throw new ApiError(401, "Unauthorized request");
     }
+
+    const decodedToken = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    const foundedUser = await User.findById(decodedToken?._id).select("-password -refreshToken -passwordHistory");
+
+    if (!foundedUser) {
+        throw new ApiError(401, "Invalid access token");
+    }
+
+    req.user = foundedUser;
+    next();
 });
 
 export default verifyJWT;
