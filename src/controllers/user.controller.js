@@ -265,7 +265,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Current user fetched successfully."));
 });
 
-const changeUserInfo = asyncHandler(async (req, res) => {
+const updateUserInfo = asyncHandler(async (req, res) => {
 
     const { fullname, email } = req.body;
 
@@ -294,7 +294,7 @@ const changeUserInfo = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, updatedUser, "User info updated successfully."));
 });
 
-const changeUserAvatar = asyncHandler(async (req, res) => {
+const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path;
 
     if (!avatarLocalPath) {
@@ -324,7 +324,7 @@ const changeUserAvatar = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, updatedUser, "User avatar updated successfully."));
 });
 
-const changeUserCoverImage = asyncHandler(async (req, res) => {
+const updateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path;
 
     if (!coverImageLocalPath) {
@@ -355,7 +355,7 @@ const changeUserCoverImage = asyncHandler(async (req, res) => {
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-    const { username } = req.query;
+    const { username } = req.params;
 
     if (!username?.trim()) {
         throw new ApiError(400, "Username is missing in the url.");
@@ -483,9 +483,9 @@ export {
     refreshAccessToken,
     changeUserPassword,
     getCurrentUser,
-    changeUserInfo,
-    changeUserAvatar,
-    changeUserCoverImage,
+    updateUserInfo,
+    updateUserAvatar,
+    updateUserCoverImage,
     getUserChannelProfile,
     getWatchHistory
 };
